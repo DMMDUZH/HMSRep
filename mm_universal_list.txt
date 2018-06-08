@@ -1,5 +1,4 @@
 GENEIDS	GENEIDS
-Cytb	Cytb
 Mt-Cyb	Mt-Cyb
 Nd6	Nd6
 Mtnd6	Mtnd6
