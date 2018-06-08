@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 library(ggplot2)
 library(shiny)
 library(shinydashboard)
@@ -395,6 +394,4 @@ dashboardPage(
  	),
 body
 )
-=======
->>>>>>> 22b13616c36249ae36b8f38d9e15d1cd901a779a
 
