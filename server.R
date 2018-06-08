@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 system("sudo R CMD javareconf JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre")
 rm(list=ls()) 
 library(ggplot2)
@@ -102,6 +101,23 @@ shinyServer(function(input, output,session) {
 		goEnDataMF <- ego.mf.ro	
 		return(goEnDataMF)
 	}
+	enrichGoCC <- function(gene, uniList, orgDB){
+                ego.cc <- enrichGO(gene    = gene,
+                universe      = uniList,
+                OrgDb         = orgDB,
+                ont           = "CC",
+                pAdjustMethod = "fdr",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01,
+                minGSSize = 3,
+                readable      = TRUE)
+
+                ego.cc.r <- ego.cc[order(ego.cc$ID),]
+                ego.cc.r <- ego.cc.r[!duplicated(ego.cc.r$ID),]
+                ego.cc.ro <- ego.cc.r[order(ego.cc.r$p.adjust),]
+                goEnDataCC <- ego.cc.ro
+                return(goEnDataCC)
+        }
 	#Function that is not in use at the moment
 	pepVarModConf <- function(locConfTab, pep_var_mod_res, groups){
 		pepVarModConf <- rename(count(locConfTab, pep_var_mod_res, groups), Freq = n)
@@ -170,7 +186,13 @@ msmsFiles8 <- list()
         })
 	#Reactive that does most of the work in this script
 	create_tabs3 <- reactive({
-		globalProt <<- read.table("universal_list.txt", header = TRUE, sep="\t")
+		organism <- input$organism
+		if(organism == "Mouse"){
+		globalProt <<- read.table("mm_universal_list.txt", header = TRUE, sep="\t")
+		}
+		else if(organism == "Human"){
+		globalProt <<- read.table("hs_universal_list.txt", header = TRUE, sep="\t")
+		}
 		msmsFiles <- csvdata1()
                 searchVar <- input$searchtype
                 searchOrderVar <- input$searchorder
@@ -2316,6 +2338,35 @@ output$heatmapProt <- renderPlot({
                 print(p1)
         }
         })
+	output$goPlot1CC <- renderPlotly({
+                expType1 <- input$exptype1
+                testre<-create_tabs3()
+                globalProt.1 <- globalProt[,1]
+                organism <- input$organism
+                if(numfiles>=1){
+                localProt <- msmsHeat2[[1]]$protName[-1]
+                #localProt.1 <- str_decapitalize(msmsHeat2[[1]]$protName[-1])
+                #localProt <- str_ucfirst(localProt.1)
+                #geneList <- t(msmsHeat2[[1]])
+                goterm = "CC"
+                #goEnData3 <- goEnrich(globalProt.1, localProt, geneList, organism)
+                goEnDataCC <- goEnrich(globalProt.1, localProt, organism, goterm)
+                p <- ggplot(data = goEnDataCC, aes(x = Description,y=Count,
+                fill=p.adjust)) +
+                geom_bar(stat = 'identity') +
+                coord_flip() +
+                scale_x_discrete(limits = goEnDataCC$Description)+
+                labs(title = paste(expType1," - CC enrichemnt", sep="")) +
+                ylab('Number of genes') +
+                xlab('')+
+                theme(text = element_text(size=6), axis.text=element_text(size=6,face="bold"))+
+                scale_fill_gradient2(low='grey8', mid='grey38', high='grey87', space='Lab', name = "p-value")+
+                theme(panel.background = element_blank())
+                p1 <- ggplotly(p)
+                p1$elementId <- NULL
+                print(p1)
+        }
+        })
 	output$goPlot2BP <- renderPlotly({
                 expType2 <- input$exptype2
                 testre<-create_tabs3()
@@ -2476,6 +2527,4 @@ output$heatmapProt <- renderPlot({
 
 
 
-=======
->>>>>>> 22b13616c36249ae36b8f38d9e15d1cd901a779a
 
