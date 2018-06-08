@@ -66,6 +66,10 @@ shinyServer(function(input, output,session) {
                 goEnDataMF <- enrichGoMF(gene, uniList, orgDB)
                 return(goEnDataMF)
                 }
+		else{
+		goEnDataCC <- enrichGoCC(gene, uniList, orgDB)
+                return(goEnDataCC)
+		}
 	}
 	enrichGoBP <- function(gene, uniList, orgDB){
 		ego.bp <- enrichGO(gene    = gene,
