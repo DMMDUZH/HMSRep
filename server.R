@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 system("sudo R CMD javareconf JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre")
 rm(list=ls()) 
 library(ggplot2)
@@ -2475,4 +2476,6 @@ output$heatmapProt <- renderPlot({
 
 
 
+=======
+>>>>>>> 22b13616c36249ae36b8f38d9e15d1cd901a779a
 

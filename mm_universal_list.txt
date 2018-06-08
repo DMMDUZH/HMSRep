@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 GENEIDS	GENEIDS
 Ppp2r5e	Ppp2r5e
 Ppp2r5c	Ppp2r5c
@@ -17196,3 +17197,6 @@ REV_zz|ZZ_FGCZCont0256| P15252|REF_HEVBR Rubber elongation factor protein - Heve
 REV_zz|ZZ_FGCZCont0257| P42212|GFP_AEQVI Green fluorescent protein - Aequorea victoria	REV_zz|ZZ_FGCZCont0257| P42212|GFP_AEQVI Green fluorescent protein - Aequorea victoria
 REV_zz|ZZ_FGCZCont0258| Glu-1-Fibrinopeptide B human (Sigma)	REV_zz|ZZ_FGCZCont0258| Glu-1-Fibrinopeptide B human (Sigma)
 REV_zz|ZZ_FGCZCont0260| iRT_Protein_with_AAAAK_spacers concatenated Biognosys Retention Time Kit peptides with AAAAK spacers	REV_zz|ZZ_FGCZCont0260| iRT_Protein_with_AAAAK_spacers concatenated Biognosys Retention Time Kit peptides with AAAAK spacers
+=======
+
+>>>>>>> 22b13616c36249ae36b8f38d9e15d1cd901a779a
