@@ -170,7 +170,8 @@ msmsFiles41 <- list()
 		globalProt <<- read.table("hs_universal_list.txt", header = TRUE, sep="\t")
 		}
 		msmsFiles <- csvdata1()
-                searchVar <- input$searchtype
+                searchVar1 <- input$searchtype1
+		searchVar2 <- input$searchtype2
                 searchOrderVar <- input$searchorder
                 for(i in 1:numfiles){
                 msms4.2 <- msmsFiles1[[i]]
@@ -179,8 +180,12 @@ msmsFiles41 <- list()
 		#Remove quotes from modification column if there is any
 		msms4.2.1$pep_var_mod <- gsub("\"","",msms4.2.1$pep_var_mod)
 		#Filter only the search type user selected
-		msms4.2.2 <- msms4.2.1[msms4.2.1$pep_var_mod == searchVar,]
-		
+		if(searchVar1 != "None"){
+		msms4.2.2 <- msms4.2.1[msms4.2.1$pep_var_mod == searchVar1,]
+		}
+		else{
+		msms4.2.2 <- msms4.2.1[msms4.2.1$pep_var_mod == searchVar2,]
+		}
 		msms4.2.3 <- msms4.2.2[FALSE,]
 		#Remove corrupted records
 		if("X.query_number." %in% colnames(msms4.2.2)){
