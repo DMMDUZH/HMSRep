@@ -277,7 +277,7 @@ body <- dashboardBody(
                                                 )
                                         )
                                 ),
-				tabPanel('GO_Enrichment',p(HTML("Distribution <a href='#goPlot1BP'>ADPr</a>")),
+				tabPanel('GO Enrichment BP',p(HTML("Distribution <a href='#goPlot1BP'>ADPr</a>")),
                                         value=6,
                                         br(),
                                         fluidRow(
@@ -291,13 +291,64 @@ body <- dashboardBody(
 					br(),
                                         fluidRow(
                                         column(3,
+                                                plotlyOutput("goPlot2BP", width = "600px", height = "750px")
+                                                )
+					),
+					br(),
+                                        fluidRow(
+                                        column(3,
+                                                plotlyOutput("goPlot3BP", width = "600px", height = "750px")
+                                                )
+					),
+					br(),
+                                        fluidRow(
+                                        column(3,
+                                                plotlyOutput("goPlot4BP", width = "600px", height = "750px")
+                                                )
+					)
+				),
+				tabPanel('GO Enrichment MF',p(HTML("Distribution <a href='#goPlot1BP'>ADPr</a>")),
+                                        value=6,	
+					br(),
+                                        fluidRow(
+                                        column(3,
                                                 plotlyOutput("goPlot1MF", width = "600px", height = "750px")
                                                 ),
-					column(4,offset = 3,
+                                        column(4,offset = 3,
                                                 dataTableOutput("goMF1")
                                                 )
                                         ),
+                                        br(),
+                                        fluidRow(
+                                        column(3,
+                                                plotlyOutput("goPlot2MF", width = "600px", height = "750px")
+                                                ),
+                                        column(4,offset = 3,
+                                                dataTableOutput("goMF2")
+                                                )
+                                        ),
 					br(),
+                                        fluidRow(
+                                        column(3,
+                                                plotlyOutput("goPlot3MF", width = "600px", height = "750px")
+                                                ),
+                                        column(4,offset = 3,
+                                                dataTableOutput("goMF3")
+                                                )
+                                        ),
+					br(),
+                                        fluidRow(
+                                        column(3,
+                                                plotlyOutput("goPlot4MF", width = "600px", height = "750px")
+                                                ),
+                                        column(4,offset = 3,
+                                                dataTableOutput("goMF4")
+                                                )
+                                        )
+				),
+				tabPanel('GO Enrichment CC',p(HTML("Distribution <a href='#goPlot1BP'>ADPr</a>")),
+                                        value=6,
+                                        br(),
                                         fluidRow(
                                         column(3,
                                                 plotlyOutput("goPlot1CC", width = "600px", height = "750px")
@@ -309,37 +360,28 @@ body <- dashboardBody(
 					br(),
                                         fluidRow(
                                         column(3,
-                                                plotlyOutput("goPlot2BP", width = "600px", height = "750px")
-                                                )
-					),
-					br(),
-                                        fluidRow(
-					column(3,
-                                                plotlyOutput("goPlot2MF", width = "600px", height = "750px")
+                                                plotlyOutput("goPlot2CC", width = "600px", height = "750px")
+                                                ),
+                                        column(4,offset = 3,
+                                                dataTableOutput("goCC2")
                                                 )
                                         ),
 					br(),
                                         fluidRow(
                                         column(3,
-                                                plotlyOutput("goPlot3BP", width = "600px", height = "750px")
-                                                )
-					),
-					br(),
-                                        fluidRow(
-                                        column(3,
-                                                plotlyOutput("goPlot3MF", width = "600px", height = "750px")
+                                                plotlyOutput("goPlot3CC", width = "600px", height = "750px")
+                                                ),
+                                        column(4,offset = 3,
+                                                dataTableOutput("goCC3")
                                                 )
                                         ),
 					br(),
                                         fluidRow(
                                         column(3,
-                                                plotlyOutput("goPlot4BP", width = "600px", height = "750px")
-                                                )
-					),
-					br(),
-                                        fluidRow(
-                                        column(3,
-                                                plotlyOutput("goPlot4MF", width = "600px", height = "750px")
+                                                plotlyOutput("goPlot4CC", width = "600px", height = "750px")
+                                                ),
+                                        column(4,offset = 3,
+                                                dataTableOutput("goCC4")
                                                 )
                                         )
 				)	
@@ -383,7 +425,10 @@ dashboardPage(
 		textAreaInput("exptype2", rows=1, cols=40, "Enter title for exp2"),
 		textAreaInput("exptype3", rows=1, cols=40, "Enter title for exp3"),
 		textAreaInput("exptype4", rows=1, cols=40, "Enter title for exp4"),
-		selectInput("organism", "Select search type", choices = c('Mouse'='Mouse', 'Human'='Human')),
+		selectInput("organism", "Select organism fo ontology analysis", choices = c('Mouse'='Mouse', 'Human'='Human')),
+		numericInput("pval1", "Enter p-value for BP",max=1, min=0.00005, value = "0.01"),
+		numericInput("pval2", "Enter p-value for MF",max=1, min=0.00005, value = "0.01"),
+		numericInput("pval3", "Enter p-value for CC",max=1, min=0.00005, value = "0.01"),
 		actionButton("choice", "Create Tables"),
 		checkboxGroupInput('select1',
                         'Columns in msms_file1 to show:',

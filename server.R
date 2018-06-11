@@ -1,4 +1,26 @@
 rm(list=ls()) 
+if (!require("heatmaply")){
+library(devtools)
+install_github('talgalili/heatmaply')
+}
+if (!require("clusterProfiler")){
+library(devtools)
+install_github('GuangchuangYu/DOSE')
+install_github('GuangchuangYu/enrichplot')
+install_github('GuangchuangYu/clusterProfiler')
+}
+if (!require("org.Mm.eg.db")){
+source("https://bioconductor.org/biocLite.R")
+biocLite("org.Mm.eg.db")
+biocLite("org.Hs.eg.db")
+}
+
+if (!require("lettercase")){
+source("https://bioconductor.org/biocLite.R")
+biocLite("lettercase")
+}
+
+
 library(ggplot2)
 library(shiny)
 #library(plyr)
@@ -31,7 +53,7 @@ shinyServer(function(input, output,session) {
   		setdiff(big.vec, unique(duplicates))
 	}
 	#This function computes GO enrichment
-	goEnrich <- function(globalProt, localProt, organism, goterm){
+	goEnrich <- function(globalProt, localProt, organism, goterm, pVal){
 		#function(globalProt, localProt, geneList, organism){
 		egy <- 0
 		egx <- 0
@@ -56,17 +78,17 @@ shinyServer(function(input, output,session) {
 		#names(geneList) <- plyr::mapvalues(names(geneList), from = egx$SYMBOL, to = egx$ENTREZID)
 		gene <- egx$ENTREZID
 		uniList <- egy$ENTREZID
-		goEnDataGT <- enrichGoGT(gene, uniList, orgDB, goterm)
+		goEnDataGT <- enrichGoGT(gene, uniList, orgDB, goterm, pVal)
                 return(goEnDataGT)
 	}
 	#This function computes GO enrichment
-	enrichGoGT <- function(gene, uniList, orgDB, goterm){
+	enrichGoGT <- function(gene, uniList, orgDB, goterm, pVal){
                 ego.gt <- enrichGO(gene    = gene,
                 universe      = uniList,
                 OrgDb         = orgDB,
                 ont           = goterm,
                 pAdjustMethod = "fdr",
-                pvalueCutoff  = 0.01,
+                pvalueCutoff  = pVal,
                 qvalueCutoff  = 0.01,
                 minGSSize = 3,
                 readable      = TRUE)
@@ -2167,13 +2189,14 @@ output$heatmapProt <- renderPlot({
 
 	output$goPlot1BP <- renderPlotly({
 		expType1 <- input$exptype1
-                testre<-create_tabs3()
+                pValBP <- input$pval1
+		testre<-create_tabs3()
 		globalProt.1 <- globalProt[,1]
 		organism <- input$organism
 		if(numfiles>=1){
 		localProt <- msmsHeat2[[1]]$protName[-1]
 		goterm = "BP"
-		goEnDataBP <- goEnrich(globalProt.1, localProt, organism, goterm)
+		goEnDataBP <- goEnrich(globalProt.1, localProt, organism, goterm, pValBP)
 		p <- ggplot(data = goEnDataBP, aes(x = Description,y=Count,
               	fill=p.adjust)) +
        		geom_bar(stat = 'identity') +
@@ -2192,6 +2215,7 @@ output$heatmapProt <- renderPlot({
 	})
 	output$goPlot1MF <- renderPlotly({
                 expType1 <- input$exptype1
+		pValMF <- input$pval2
                 testre<-create_tabs3()
                 globalProt.1 <- globalProt[,1]
                 organism <- input$organism
@@ -2202,7 +2226,7 @@ output$heatmapProt <- renderPlot({
                 #geneList <- t(msmsHeat2[[1]])
 		goterm = "MF"
                 #goEnData3 <- goEnrich(globalProt.1, localProt, geneList, organism)
-                goEnDataMF <- goEnrich(globalProt.1, localProt, organism, goterm)
+                goEnDataMF <- goEnrich(globalProt.1, localProt, organism, goterm, pValMF)
                 p <- ggplot(data = goEnDataMF, aes(x = Description,y=Count,
                 fill=p.adjust)) +
                 geom_bar(stat = 'identity') +
@@ -2221,6 +2245,7 @@ output$heatmapProt <- renderPlot({
         })
 	output$goPlot1CC <- renderPlotly({
                 expType1 <- input$exptype1
+		pValCC <- input$pval3
                 testre<-create_tabs3()
                 globalProt.1 <- globalProt[,1]
                 organism <- input$organism
@@ -2231,7 +2256,7 @@ output$heatmapProt <- renderPlot({
                 #geneList <- t(msmsHeat2[[1]])
                 goterm = "CC"
                 #goEnData3 <- goEnrich(globalProt.1, localProt, geneList, organism)
-                goEnDataCC <- goEnrich(globalProt.1, localProt, organism, goterm)
+                goEnDataCC <- goEnrich(globalProt.1, localProt, organism, goterm, pValCC)
                 p <- ggplot(data = goEnDataCC, aes(x = Description,y=Count,
                 fill=p.adjust)) +
                 geom_bar(stat = 'identity') +
@@ -2250,13 +2275,14 @@ output$heatmapProt <- renderPlot({
         })
 	output$goPlot2BP <- renderPlotly({
                 expType2 <- input$exptype2
+		pValBP <- input$pval1
                 testre<-create_tabs3()
                 globalProt.1 <- globalProt[,1]
                 organism <- input$organism
                 if(numfiles>=2){
                 localProt <- msmsHeat2[[2]]$protName[-1]
                 goterm = "BP"
-                goEnDataBP <- goEnrich(globalProt.1, localProt, organism, goterm)
+                goEnDataBP <- goEnrich(globalProt.1, localProt, organism, goterm, pValBP)
                 p <- ggplot(data = goEnDataBP, aes(x = Description,y=Count,
                 fill=p.adjust)) +
                 geom_bar(stat = 'identity') +
@@ -2275,13 +2301,14 @@ output$heatmapProt <- renderPlot({
         })
 	output$goPlot2MF <- renderPlotly({
                 expType2 <- input$exptype2
+		pValMF <- input$pval2
                 testre<-create_tabs3()
                 globalProt.1 <- globalProt[,1]
                 organism <- input$organism
                 if(numfiles>=2){
                 localProt <- msmsHeat2[[2]]$protName[-1]
                 goterm = "MF"
-                goEnDataMF <- goEnrich(globalProt.1, localProt, organism, goterm)
+                goEnDataMF <- goEnrich(globalProt.1, localProt, organism, goterm, pValMF)
                 p <- ggplot(data = goEnDataMF, aes(x = Description,y=Count,
                 fill=p.adjust)) +
                 geom_bar(stat = 'identity') +
@@ -2298,16 +2325,46 @@ output$heatmapProt <- renderPlot({
                 print(p1)
         }
         })
-
+	output$goPlot2CC <- renderPlotly({
+                expType1 <- input$exptype1
+		pValCC <- input$pval3
+                testre<-create_tabs3()
+                globalProt.1 <- globalProt[,1]
+                organism <- input$organism
+                if(numfiles>=1){
+                localProt <- msmsHeat2[[2]]$protName[-1]
+                #localProt.1 <- str_decapitalize(msmsHeat2[[2]]$protName[-1])
+                #localProt <- str_ucfirst(localProt.1)
+                #geneList <- t(msmsHeat2[[2]])
+                goterm = "CC"
+                #goEnData3 <- goEnrich(globalProt.1, localProt, geneList, organism)
+                goEnDataCC <- goEnrich(globalProt.1, localProt, organism, goterm, pValCC)
+                p <- ggplot(data = goEnDataCC, aes(x = Description,y=Count,
+                fill=p.adjust)) +
+                geom_bar(stat = 'identity') +
+                coord_flip() +
+                scale_x_discrete(limits = goEnDataCC$Description)+
+                labs(title = paste(expType1," - CC enrichemnt", sep="")) +
+                ylab('Number of genes') +
+                xlab('')+
+                theme(text = element_text(size=6), axis.text=element_text(size=6,face="bold"))+
+                scale_fill_gradient2(low='grey8', mid='grey38', high='grey87', space='Lab', name = "p-value")+
+                theme(panel.background = element_blank())
+                p1 <- ggplotly(p)
+                p1$elementId <- NULL
+                print(p1)
+        }
+        })
 	output$goPlot3BP <- renderPlotly({
                 expType3 <- input$exptype3
+		pValBP <- input$pval1
                 testre<-create_tabs3()
                 globalProt.1 <- globalProt[,1]
                 organism <- input$organism
                 if(numfiles>=3){
                 localProt <- msmsHeat2[[3]]$protName[-1]
                 goterm = "BP"
-                goEnDataBP <- goEnrich(globalProt.1, localProt, organism, goterm)
+                goEnDataBP <- goEnrich(globalProt.1, localProt, organism, goterm, pValBP)
                 p <- ggplot(data = goEnDataBP, aes(x = Description,y=Count,
                 fill=p.adjust)) +
                 geom_bar(stat = 'identity') +
@@ -2326,13 +2383,14 @@ output$heatmapProt <- renderPlot({
         })
 	output$goPlot3MF <- renderPlotly({
                 expType3 <- input$exptype3
+		pValMF <- input$pval2
                 testre<-create_tabs3()
                 globalProt.1 <- globalProt[,1]
                 organism <- input$organism
                 if(numfiles>=1){
                 localProt <- msmsHeat2[[3]]$protName[-1]
                 goterm = "MF"
-                goEnDataMF <- goEnrich(globalProt.1, localProt, organism, goterm)
+                goEnDataMF <- goEnrich(globalProt.1, localProt, organism, goterm, pValMF)
                 p <- ggplot(data = goEnDataMF, aes(x = Description,y=Count,
                 fill=p.adjust)) +
                 geom_bar(stat = 'identity') +
@@ -2349,15 +2407,46 @@ output$heatmapProt <- renderPlot({
                 print(p1)
         }
         })
+	output$goPlot3CC <- renderPlotly({
+                expType1 <- input$exptype1
+		pValCC <- input$pval3
+                testre<-create_tabs3()
+                globalProt.1 <- globalProt[,1]
+                organism <- input$organism
+                if(numfiles>=1){
+                localProt <- msmsHeat2[[3]]$protName[-1]
+                #localProt.1 <- str_decapitalize(msmsHeat2[[3]]$protName[-1])
+                #localProt <- str_ucfirst(localProt.1)
+                #geneList <- t(msmsHeat2[[3]])
+                goterm = "CC"
+                #goEnData3 <- goEnrich(globalProt.1, localProt, geneList, organism)
+                goEnDataCC <- goEnrich(globalProt.1, localProt, organism, goterm, pValCC)
+                p <- ggplot(data = goEnDataCC, aes(x = Description,y=Count,
+                fill=p.adjust)) +
+                geom_bar(stat = 'identity') +
+                coord_flip() +
+                scale_x_discrete(limits = goEnDataCC$Description)+
+                labs(title = paste(expType1," - CC enrichemnt", sep="")) +
+                ylab('Number of genes') +
+                xlab('')+
+                theme(text = element_text(size=6), axis.text=element_text(size=6,face="bold"))+
+                scale_fill_gradient2(low='grey8', mid='grey38', high='grey87', space='Lab', name = "p-value")+
+                theme(panel.background = element_blank())
+                p1 <- ggplotly(p)
+                p1$elementId <- NULL
+                print(p1)
+        }
+        })
 	output$goPlot4BP <- renderPlotly({
                 expType4 <- input$exptype4
+		pValBP <- input$pval1
                 testre<-create_tabs3()
                 globalProt.1 <- globalProt[,1]
                 organism <- input$organism
                 if(numfiles==4){
                 localProt <- msmsHeat2[[4]]$protName[-1]
                 goterm = "BP"
-                goEnDataBP <- goEnrich(globalProt.1, localProt, organism, goterm)
+                goEnDataBP <- goEnrich(globalProt.1, localProt, organism, goterm, pValBP)
                 p <- ggplot(data = goEnDataBP, aes(x = Description,y=Count,
                 fill=p.adjust)) +
                 geom_bar(stat = 'identity') +
@@ -2376,19 +2465,50 @@ output$heatmapProt <- renderPlot({
         })
 	output$goPlot4MF <- renderPlotly({
                 expType4 <- input$exptype4
+		pValMF <- input$pval2
                 testre<-create_tabs3()
                 globalProt.1 <- globalProt[,1]
                 organism <- input$organism
                 if(numfiles==4){
                 localProt <- msmsHeat2[[4]]$protName[-1]
                 goterm = "MF"
-                goEnDataMF <- goEnrich(globalProt.1, localProt, organism, goterm)
+                goEnDataMF <- goEnrich(globalProt.1, localProt, organism, goterm, pValMF)
                 p <- ggplot(data = goEnDataMF, aes(x = Description,y=Count,
                 fill=p.adjust)) +
                 geom_bar(stat = 'identity') +
                 coord_flip() +
                 scale_x_discrete(limits = goEnDataMF$Description)+
                 labs(title = paste(expType4," - MF enrichemnt", sep="")) +
+                ylab('Number of genes') +
+                xlab('')+
+                theme(text = element_text(size=6), axis.text=element_text(size=6,face="bold"))+
+                scale_fill_gradient2(low='grey8', mid='grey38', high='grey87', space='Lab', name = "p-value")+
+                theme(panel.background = element_blank())
+                p1 <- ggplotly(p)
+                p1$elementId <- NULL
+                print(p1)
+        }
+        })
+	output$goPlot4CC <- renderPlotly({
+                expType1 <- input$exptype1
+		pValCC <- input$pval3
+                testre<-create_tabs3()
+                globalProt.1 <- globalProt[,1]
+                organism <- input$organism
+                if(numfiles>=1){
+                localProt <- msmsHeat2[[4]]$protName[-1]
+                #localProt.1 <- str_decapitalize(msmsHeat2[[4]]$protName[-1])
+                #localProt <- str_ucfirst(localProt.1)
+                #geneList <- t(msmsHeat2[[4]])
+                goterm = "CC"
+                #goEnData3 <- goEnrich(globalProt.1, localProt, geneList, organism)
+                goEnDataCC <- goEnrich(globalProt.1, localProt, organism, goterm, pValCC)
+                p <- ggplot(data = goEnDataCC, aes(x = Description,y=Count,
+                fill=p.adjust)) +
+                geom_bar(stat = 'identity') +
+                coord_flip() +
+                scale_x_discrete(limits = goEnDataCC$Description)+
+                labs(title = paste(expType1," - CC enrichemnt", sep="")) +
                 ylab('Number of genes') +
                 xlab('')+
                 theme(text = element_text(size=6), axis.text=element_text(size=6,face="bold"))+
