@@ -57,13 +57,13 @@ body <- dashboardBody(
 					 br(),
                                         fluidRow(
                                         column(2,p(HTML("Main <a href='#mytable1'>table</a>")),
-                                                dataTableOutput("uniquePepTable1")
+                                                DT::dataTableOutput("uniquePepTable1")
                                                 )
                                         ),
 					 br(),
                                         fluidRow(
                                         column(2,p(HTML("Main <a href='#mytable1'>table</a>")),
-                                                dataTableOutput("uniquePepTable11")
+                                                DT::dataTableOutput("uniquePepTable11")
                                                 )
                                         )
 					#verbatimTextOutput("locresevent")
@@ -376,7 +376,8 @@ dashboardPage(
                  		'Double Quote'='"',
                  		'Single Quote'="'"),
                		''),
-		selectInput("searchtype", "Select search type", choices = c('HCD RSY search'='ADP-Ribosyl-HCD (RSY) (RSY)', 'EThcD RSY search'='ADP-Ribosyl-EThcD (RSY) (RSY)','HCD DEKRSY search'='ADP-Ribosyl-HCD (SRDEKY) (DEKRSY)','EThcD DEKRSY search'='ADP-Ribosyl-EThcD (SRDEKY) (DEKRSY)','EThcD DEKRS search'='ADP-Ribosyl-EThcD (KRDES) (DEKRS)')),
+		selectInput("searchtype1", "Select search type", choices = c('HCD RSY search'='ADP-Ribosyl-HCD (RSY) (RSY)', 'EThcD RSY search'='ADP-Ribosyl-EThcD (RSY) (RSY)','HCD DEKRSY search'='ADP-Ribosyl-HCD (SRDEKY) (DEKRSY)','EThcD DEKRSY search'='ADP-Ribosyl-EThcD (SRDEKY) (DEKRSY)','EThcD DEKRS search'='ADP-Ribosyl-EThcD (KRDES) (DEKRS)')),
+		selectInput("searchtype2", "Select search type", choices = c('HCD RSY search'='ADP-Ribosyl-HCD (RSY) (RSY)', 'EThcD RSY search'='ADP-Ribosyl-EThcD (RSY) (RSY)','HCD DEKRSY search'='ADP-Ribosyl-HCD (SRDEKY) (DEKRSY)','EThcD DEKRSY search'='ADP-Ribosyl-EThcD (SRDEKY) (DEKRSY)','EThcD DEKRS search'='ADP-Ribosyl-EThcD (KRDES) (DEKRS)')),
 		selectInput("searchorder", "Select search order of the ADPr modification and then press Create Table button", choices = c('first'='1', 'second'='2', 'third'='3', 'fourth'='4', 'fifth'='5')),
 		textAreaInput("exptype1", rows=1, cols=40, "Enter title for exp1"),
 		textAreaInput("exptype2", rows=1, cols=40, "Enter title for exp2"),

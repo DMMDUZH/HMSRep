@@ -1,4 +1,3 @@
-system("sudo R CMD javareconf JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre")
 rm(list=ls()) 
 library(ggplot2)
 library(shiny)
@@ -31,8 +30,7 @@ shinyServer(function(input, output,session) {
   		duplicates <- big.vec[duplicated(big.vec)]
   		setdiff(big.vec, unique(duplicates))
 	}
-#goEnData <- list()
-	#Function that is not in use at the moment
+	#This function computes GO enrichment
 	goEnrich <- function(globalProt, localProt, organism, goterm){
 		#function(globalProt, localProt, geneList, organism){
 		egy <- 0
@@ -58,70 +56,41 @@ shinyServer(function(input, output,session) {
 		#names(geneList) <- plyr::mapvalues(names(geneList), from = egx$SYMBOL, to = egx$ENTREZID)
 		gene <- egx$ENTREZID
 		uniList <- egy$ENTREZID
-		if(goterm=="BP"){
-		goEnDataBP <- enrichGoBP(gene, uniList, orgDB)
-		return(goEnDataBP)
-		}
-		else if(goterm=="MF"){
-                goEnDataMF <- enrichGoMF(gene, uniList, orgDB)
-                return(goEnDataMF)
-                }
-		else{
-		goEnDataCC <- enrichGoCC(gene, uniList, orgDB)
-                return(goEnDataCC)
-		}
+		goEnDataGT <- enrichGoGT(gene, uniList, orgDB, goterm)
+                return(goEnDataGT)
 	}
-	enrichGoBP <- function(gene, uniList, orgDB){
-		ego.bp <- enrichGO(gene    = gene,
+	#This function computes GO enrichment
+	enrichGoGT <- function(gene, uniList, orgDB, goterm){
+                ego.gt <- enrichGO(gene    = gene,
                 universe      = uniList,
                 OrgDb         = orgDB,
-                ont           = "BP",
-                pAdjustMethod = "fdr",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.01,
-                minGSSize = 3,
-        	readable      = TRUE)
-	
-		ego.bp.r <- ego.bp[order(ego.bp$ID),]
-                ego.bp.r <- ego.bp.r[!duplicated(ego.bp.r$ID),]
-                ego.bp.ro <- ego.bp.r[order(ego.bp.r$p.adjust),]
-		goEnDataBP <- ego.bp.ro
-		return(goEnDataBP)
-	}
-	enrichGoMF <- function(gene, uniList, orgDB){
-		ego.mf <- enrichGO(gene    = gene,
-                universe      = uniList,
-                OrgDb         = orgDB,
-                ont           = "MF",
+                ont           = goterm,
                 pAdjustMethod = "fdr",
                 pvalueCutoff  = 0.01,
                 qvalueCutoff  = 0.01,
                 minGSSize = 3,
                 readable      = TRUE)
 
-                ego.mf.r <- ego.mf[order(ego.mf$ID),]
-                ego.mf.r <- ego.mf.r[!duplicated(ego.mf.r$ID),]
-                ego.mf.ro <- ego.mf.r[order(ego.mf.r$p.adjust),]
-		goEnDataMF <- ego.mf.ro	
-		return(goEnDataMF)
+                ego.gt.r <- ego.gt[order(ego.gt$ID),]
+                ego.gt.r <- ego.gt.r[!duplicated(ego.gt.r$ID),]
+                ego.gt.ro <- ego.gt.r[order(ego.gt.r$p.adjust),]
+                goEnDataGT <- ego.gt.ro
+                return(goEnDataGT)
 	}
-	enrichGoCC <- function(gene, uniList, orgDB){
-                ego.cc <- enrichGO(gene    = gene,
-                universe      = uniList,
-                OrgDb         = orgDB,
-                ont           = "CC",
-                pAdjustMethod = "fdr",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.01,
-                minGSSize = 3,
-                readable      = TRUE)
-
-                ego.cc.r <- ego.cc[order(ego.cc$ID),]
-                ego.cc.r <- ego.cc.r[!duplicated(ego.cc.r$ID),]
-                ego.cc.ro <- ego.cc.r[order(ego.cc.r$p.adjust),]
-                goEnDataCC <- ego.cc.ro
-                return(goEnDataCC)
-        }
+	#Stack bar preparation
+	freqDistrCalc <- function(stackBart, expType){
+		stackBar1 <- data.frame(matrix(ncol = 3, nrow = length(stackBart$groups)))
+                colnames(stackBar1) <- c("Freq1", "pep_var_mod_res", "groups")
+		stackBar1$Freq1 <- stackBart$Freq
+		stackBar1$pep_var_mod_res <- stackBart$pep_var_mod_res
+		stackBar1$groups <- stackBart$groups
+		reshaped <- reshape(stackBar1, varying = 1, sep = "", direction = 'long')
+		reshaped$cat <- ''
+		reshaped[reshaped$time ==1,]$cat <- expType
+		myBlues <- c("dodgerblue7", "blue")
+		#reshaped$cat <- factor(reshaped$cat, levels = reshaped$cat[order(reshaped$time)])
+		return(reshaped)
+	}
 	#Function that is not in use at the moment
 	pepVarModConf <- function(locConfTab, pep_var_mod_res, groups){
 		pepVarModConf <- rename(count(locConfTab, pep_var_mod_res, groups), Freq = n)
@@ -160,6 +129,9 @@ msmsFiles5 <- list()
 msmsFiles6 <- list()
 msmsFiles7 <- list()
 msmsFiles8 <- list()
+msmsFiles51 <- list()
+msmsFiles81 <- list()
+msmsFiles41 <- list()
 	
 	#Event reactive that reads the uploaded files and store the number of files loaded in a list
 	#This also stores the number of the files
@@ -314,6 +286,8 @@ for(k in 1:length(msmsFiles4[[i]]$pep_seq.us.len)){
 
 	msmsFiles5[[i]] <<- msmsFiles4[[i]][!duplicated(msmsFiles4[[i]][c(cx1,cx2)]),]
 
+	#msmsFiles41[[i]] <<- with(msmsFiles4[[i]], ave(as.numeric(S, Cnty, FUN=function(x) length(unique(x)))) 	
+
 	msmsProts1[[i]] <<- msmsFiles5[[i]][!duplicated(msmsFiles5[[i]]$protName1),]
 
 	msmsFiles6.t <- data.frame(protName=msmsFiles5[[i]]$protName1, pepSeq=msmsFiles5[[i]]$pep_seq.2, pepSeq.upstream=msmsFiles5[[i]]$pep_seq.us, pepSeq.stem=msmsFiles5[[i]]$pep_seq.by,pepSeq.downstream=msmsFiles5[[i]]$pep_seq.ds,modRes=msmsFiles5[[i]]$pep_var_mod_res_num, protPos=msmsFiles5[[i]]$prot_var_mod_res_num, protSeq=msmsFiles5[[i]]$prot_seq) 
@@ -426,12 +400,6 @@ for(k in 1:length(msmsFiles4[[i]]$pep_seq.us.len)){
 		stackBar[[i]]$groups <<- pepVarModConf$groups
 		stackBar[[i]]$Freq <<- pepVarModConf$Freq
 		stackBar[[i]]$pep_var_mod_res <<- pepVarModConf$pep_var_mod_res
-		#un.pep <- array()
-		#	for(i in 1:length(msmsFiles3[[i]]$pep_seq)){
-		#		for(k in 1:length(msmsFiles3[[i]]$pep_seq)){
-		#		un.pep[[k]] <- pmatch(msmsFiles3[[i]]$pep_seq[[k]], msmsFiles3[[i]]$pep_seq)
-		#		}
-		#	}		
 		}
         })
 	
@@ -633,14 +601,18 @@ output$mytable42 <- renderDataTable({
                 )
 )
 
-output$uniquePepTable1 <- renderDataTable({
+output$uniquePepTable1 <- DT::renderDataTable({
                 testre<-create_tabs3()
                 if(numfiles>=1){
                 columns <- names(msmsFiles6[[1]])
                 if (!is.null(input$select1)) {
                         columns <- input$select1
                 }
-                msmsFiles6[[1]][,columns,drop=FALSE]
+                DT::datatable(msmsFiles6[[1]][,columns,drop=FALSE],options = list(searchHighlight = TRUE, search = list(search = 'YQKSTELLIR')))
+		#formatStyle('Sepal.Width',color = styleInterval(c(3.4, 3.8), c('white', 'blue', 'red')),backgroundColor = styleInterval(3.4, c('gray', 'yellow')))
+		#,options = list(searchHighlight = TRUE, search = list(search = msmsFiles6[[1]]$pep_seq.2)))
+		#[,columns,drop=FALSE]
+		#,options = list(searchHighlight = TRUE, search = list(search = msmsFiles6[[1]]$pep_seq.2)))
                 }
         },caption=paste("Unique peptides with asingle ADPr modification (lengths ignored)"),
         extensions = 'Buttons',
@@ -773,23 +745,7 @@ output$uniquePepTable41 <- renderDataTable({
 		expType1 <- input$exptype1
 		testre<-create_tabs3()
 		stackBart <- stackBar[[1]]
-		stackBar1 <- data.frame(matrix(ncol = 3, nrow = length(stackBart$groups)))
-                colnames(stackBar1) <- c("Freq1", "pep_var_mod_res", "groups")
-		stackBar1$Freq1 <- stackBar[[1]]$Freq
-		stackBar1$pep_var_mod_res <- stackBar[[1]]$pep_var_mod_res
-		stackBar1$groups <- stackBar[[1]]$groups
-		reshaped <- reshape(stackBar1, varying = 1, sep = "", direction = 'long')
-		reshaped$cat <- ''
-		reshaped[reshaped$time ==1,]$cat <- expType1
-		myBlues <- c("dodgerblue7", "blue")
-		#reshaped$cat <- factor(reshaped$cat, levels = reshaped$cat[order(reshaped$time)])
-		ax <- list(
-		title = "Distribution of site localization",
-		zeroline = FALSE,
-		showline = FALSE,
-		showticklabels = FALSE,
-		showgrid = FALSE
-		)
+		reshaped <- freqDistrCalc(stackBart, expType1)
 		p <- ggplot(reshaped, aes(x = cat, y = Freq, fill = groups)) +
   		geom_bar(stat = 'identity', position = 'stack') + facet_grid(~ pep_var_mod_res) +
   		xlab("ADPr assigned residues") +
@@ -911,16 +867,7 @@ output$uniquePepTable41 <- renderDataTable({
 		expType1 <- input$exptype1
                 testre<-create_tabs3()
                 stackBart <- stackBar[[1]]
-                stackBar1 <- data.frame(matrix(ncol = 3, nrow = length(stackBart$groups)))
-                colnames(stackBar1) <- c("Freq1", "pep_var_mod_res", "groups")
-                stackBar1$Freq1 <- stackBar[[1]]$Freq
-                stackBar1$pep_var_mod_res <- stackBar[[1]]$pep_var_mod_res
-                stackBar1$groups <- stackBar[[1]]$groups
-                reshaped <- reshape(stackBar1, varying = 1, sep = "", direction = 'long')
-                reshaped$cat <- ''
-                reshaped[reshaped$time ==1,]$cat <- expType1
-                myBlues <- c("dodgerblue7", "blue")
-                #reshaped$cat <- factor(reshaped$cat, levels = reshaped$cat[order(reshaped$time)])
+                reshaped <- freqDistrCalc(stackBart, expType1)
                 ggplot(reshaped, aes(x = cat, y = Freq, fill = groups)) +
 		geom_bar(stat = 'identity', position = 'stack') + facet_grid(~ pep_var_mod_res) +
                 xlab("ADPr assigned residues") +
@@ -938,23 +885,7 @@ output$freqdistr2 <- renderPlotly({
 		expType2 <- input$exptype2
 		testre<-create_tabs3()
 		stackBart <- stackBar[[2]]
-		stackBar1 <- data.frame(matrix(ncol = 3, nrow = length(stackBart$groups)))
-                colnames(stackBar1) <- c("Freq1", "pep_var_mod_res", "groups")
-		stackBar1$Freq1 <- stackBar[[2]]$Freq
-		stackBar1$pep_var_mod_res <- stackBar[[2]]$pep_var_mod_res
-		stackBar1$groups <- stackBar[[2]]$groups
-		reshaped <- reshape(stackBar1, varying = 1, sep = "", direction = 'long')
-		reshaped$cat <- ''
-		reshaped[reshaped$time ==1,]$cat <- expType2
-		myBlues <- c("dodgerblue7", "blue")
-		#reshaped$cat <- factor(reshaped$cat, levels = reshaped$cat[order(reshaped$time)])
-		ax <- list(
-		title = "",
-		zeroline = FALSE,
-		showline = FALSE,
-		showticklabels = FALSE,
-		showgrid = FALSE
-		)
+		reshaped <- freqDistrCalc(stackBart, expType2)
 		p <- ggplot(reshaped, aes(x = cat, y = Freq, fill = groups)) +
   		geom_bar(stat = 'identity', position = 'stack') + facet_grid(~ pep_var_mod_res) +
   		xlab("ADPr assigned residues") +
@@ -976,16 +907,7 @@ output$freqdistr2 <- renderPlotly({
 		expType2 <- input$exptype2
                 testre<-create_tabs3()
                 stackBart <- stackBar[[2]]
-                stackBar1 <- data.frame(matrix(ncol = 3, nrow = length(stackBart$groups)))
-                colnames(stackBar1) <- c("Freq1", "pep_var_mod_res", "groups")
-                stackBar1$Freq1 <- stackBar[[2]]$Freq
-                stackBar1$pep_var_mod_res <- stackBar[[2]]$pep_var_mod_res
-                stackBar1$groups <- stackBar[[2]]$groups
-                reshaped <- reshape(stackBar1, varying = 1, sep = "", direction = 'long')
-                reshaped$cat <- ''
-                reshaped[reshaped$time ==1,]$cat <- expType2
-                myBlues <- c("dodgerblue7", "blue")
-                #reshaped$cat <- factor(reshaped$cat, levels = reshaped$cat[order(reshaped$time)])
+		reshaped <- freqDistrCalc(stackBart, expType2)
                 ggplot(reshaped, aes(x = cat, y = Freq, fill = groups)) +
 		geom_bar(stat = 'identity', position = 'stack') + facet_grid(~ pep_var_mod_res) +
                 xlab("ADPr assigned residues") +
@@ -1003,23 +925,7 @@ output$freqdistr3 <- renderPlotly({
 		expType3 <- input$exptype3
 		testre<-create_tabs3()
 		stackBart <- stackBar[[3]]
-		stackBar1 <- data.frame(matrix(ncol = 3, nrow = length(stackBart$groups)))
-                colnames(stackBar1) <- c("Freq1", "pep_var_mod_res", "groups")
-		stackBar1$Freq1 <- stackBar[[3]]$Freq
-		stackBar1$pep_var_mod_res <- stackBar[[3]]$pep_var_mod_res
-		stackBar1$groups <- stackBar[[3]]$groups
-		reshaped <- reshape(stackBar1, varying = 1, sep = "", direction = 'long')
-		reshaped$cat <- ''
-		reshaped[reshaped$time ==1,]$cat <- expType3		
-		myBlues <- c("dodgerblue7", "blue")
-		#reshaped$cat <- factor(reshaped$cat, levels = reshaped$cat[order(reshaped$time)])
-		ax <- list(
-		title = "",
-		zeroline = FALSE,
-		showline = FALSE,
-		showticklabels = FALSE,
-		showgrid = FALSE
-		)
+		reshaped <- freqDistrCalc(stackBart, expType3)
 		p <- ggplot(reshaped, aes(x = cat, y = Freq, fill = groups)) +
   		geom_bar(stat = 'identity', position = 'stack') + facet_grid(~ pep_var_mod_res) +
   		xlab("ADPr assigned residues") +
@@ -1041,16 +947,7 @@ output$freqdistr3 <- renderPlotly({
 		expType3 <- input$exptype3
                 testre<-create_tabs3()
                 stackBart <- stackBar[[3]]
-                stackBar1 <- data.frame(matrix(ncol = 3, nrow = length(stackBart$groups)))
-                colnames(stackBar1) <- c("Freq1", "pep_var_mod_res", "groups")
-                stackBar1$Freq1 <- stackBar[[3]]$Freq
-                stackBar1$pep_var_mod_res <- stackBar[[3]]$pep_var_mod_res
-                stackBar1$groups <- stackBar[[3]]$groups
-                reshaped <- reshape(stackBar1, varying = 1, sep = "", direction = 'long')
-                reshaped$cat <- ''
-                reshaped[reshaped$time ==1,]$cat <- expType3
-                myBlues <- c("dodgerblue7", "blue")
-                #reshaped$cat <- factor(reshaped$cat, levels = reshaped$cat[order(reshaped$time)])
+		reshaped <- freqDistrCalc(stackBart, expType3)
                 ggplot(reshaped, aes(x = cat, y = Freq, fill = groups)) +
 		geom_bar(stat = 'identity', position = 'stack') + facet_grid(~ pep_var_mod_res) +
                 xlab("ADPr assigned residues") +
@@ -1064,27 +961,11 @@ output$freqdistr3 <- renderPlotly({
                                 colour = "black"),
                 axis.text.x = element_text(angle = 90, hjust = 1))
         })
-output$freqdistr4 <- renderPlotly({
+	output$freqdistr4 <- renderPlotly({
 		expType4 <- input$exptype4
 		testre<-create_tabs3()
 		stackBart <- stackBar[[4]]
-		stackBar1 <- data.frame(matrix(ncol = 3, nrow = length(stackBart$groups)))
-                colnames(stackBar1) <- c("Freq1", "pep_var_mod_res", "groups")
-		stackBar1$Freq1 <- stackBar[[4]]$Freq
-		stackBar1$pep_var_mod_res <- stackBar[[4]]$pep_var_mod_res
-		stackBar1$groups <- stackBar[[4]]$groups
-		reshaped <- reshape(stackBar1, varying = 1, sep = "", direction = 'long')
-		reshaped$cat <- ''
-		reshaped[reshaped$time ==1,]$cat <- expType4
-		myBlues <- c("dodgerblue7", "blue")
-		#reshaped$cat <- factor(reshaped$cat, levels = reshaped$cat[order(reshaped$time)])
-		ax <- list(
-		title = "",
-		zeroline = FALSE,
-		showline = FALSE,
-		showticklabels = FALSE,
-		showgrid = FALSE
-		)
+		reshaped <- freqDistrCalc(stackBart, expType4)
 		p <- ggplot(reshaped, aes(x = cat, y = Freq, fill = groups)) +
   		geom_bar(stat = 'identity', position = 'stack') + facet_grid(~ pep_var_mod_res) +
   		xlab("ADPr assigned residues") +
@@ -1106,16 +987,7 @@ output$freqdistr4 <- renderPlotly({
 		expType4 <- input$exptype4
                 testre<-create_tabs3()
                 stackBart <- stackBar[[4]]
-                stackBar1 <- data.frame(matrix(ncol = 3, nrow = length(stackBart$groups)))
-                colnames(stackBar1) <- c("Freq1", "pep_var_mod_res", "groups")
-                stackBar1$Freq1 <- stackBar[[4]]$Freq
-                stackBar1$pep_var_mod_res <- stackBar[[4]]$pep_var_mod_res
-                stackBar1$groups <- stackBar[[4]]$groups
-                reshaped <- reshape(stackBar1, varying = 1, sep = "", direction = 'long')
-                reshaped$cat <- ''
-                reshaped[reshaped$time ==1,]$cat <- expType4
-                myBlues <- c("dodgerblue7", "blue")
-                #reshaped$cat <- factor(reshaped$cat, levels = reshaped$cat[order(reshaped$time)])
+		reshaped <- freqDistrCalc(stackBart, expType4)
                 ggplot(reshaped, aes(x = cat, y = Freq, fill = groups)) +
 		geom_bar(stat = 'identity', position = 'stack') + facet_grid(~ pep_var_mod_res) +
                 xlab("ADPr assigned residues") +
