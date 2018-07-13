@@ -1,0 +1,4 @@
+searchType	residues
+ADP-Ribosyl-EThcD (RSY) (RSY)	3
+ADP-Ribosyl-EThcD (SRDEK) (DEKRS)	5
+ADP-Ribosyl-EThcD (SRDEKY) (DEKRSY)	6

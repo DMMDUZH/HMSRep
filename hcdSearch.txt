@@ -1,0 +1,5 @@
+searchType	residues
+ADP-Ribosyl-HCD (RSY) (RSY)	3
+ADP-Ribosyl-HCD (SRDEKY) (DEKRSY)	6
+ADP-Ribosyl-HCD (KRDES) (DEKRS)	5
+ADP-Ribosyl-HCD_249_347_541_583 (DEKRSY)	R6
